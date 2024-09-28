@@ -1,0 +1,35 @@
+vulkan plans
+
+short term: learn how to render multiple object and how to manage rendering many different object	XX
+
+mid term: gain some under standing about further tech that you can add to the engine oulined in the tutorial not neccesserily how to implement it just what it is and its
+uses so that if you need it you know about it.
+
+The shit you need to learn about is
+	dynamic uniforms
+	Separate images and sampler descriptors
+	Pipeline cache
+	Multi-threaded command buffer generation
+	Multiple subpasses
+	shared memory for compute shaders
+	async compute
+	atomic operations
+	subgroups
+
+long term: create a snowy forest scene
+	some form of lighting (bing phong or like beng phong or whater it be called)
+	some kind of terrain covered in snow
+	procedural terrein from noise
+	have snow falling from the sky
+	have trees and other foliage wave in the wind
+	some post-processing idk
+	do it all with "decent" performance
+	
+side quests: 
+
+	learn render doc
+		maybe also use render doc on some games see how they work
+
+	have audio play in the background for like ambiance and shit
+
+	do some UI so you can change variables at run time   *sacha willems imgui example!! XX

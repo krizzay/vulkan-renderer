@@ -1,0 +1,47 @@
+image layout - how image data is stored , to maximise preformace for specific purposes
+ 
+pipeline barrier - used mostly for synchronysing acces to resources like making sure a image was written to before reading
+it and can be used to transition image layouts.
+
+texels - pixels in image object
+
+resource descriptors - Resource descriptor allow shaders to freely access shit like buffers or images. just basically whatever resources ya desire
+For resource descriptors ya need ta
+        * Specify a descriptor layout during pipeline creation
+        * Allocate a descriptor set from descriptor pool
+        * Bind the descriptor set during rendering
+    
+Descriptor Layout
+        layout specifies the TYPES of resources that will be accessed.
+
+Descriptor set
+        The set specifies the actual buffer or image which will be bound to the descriptors.
+        A descriptor set can have multiple descriptors of different types (e.g. UBO, image sampler, storage buffer)
+
+Binding
+	The descriptor set is then bound for da drawing commands like the vertex or frame buffers.
+
+**da process of getting resources to the gpu and letting shader access them
+
+
+UBO vs SSBO
+	basically UBOs are more restrictive but faster than SSBOs
+
+
+**vertex binding descriptions
+a binding description describes at what "rate" to load the data.
+you need a binding per array of data (this array is on the cpu) and you describe how big each entry is (thats the stride variable), for vertecies the stride / how big they are is just "sizeof(Vertex)" or literally the size in bytes of each vertex.
+input rate is either per vertex or per instance. If ur doing instanced rendering use instance inputrate if otherwise use the per vertex. 
+
+A vertex binding descriptor tells the program how to handle a vertex as a whole, an attribute descriptor tells the program how to handle each attribute of the vertex (e.g. position, color, anything you can thing of)
+
+vertex attribute descriptor has 4 tings
+
+binding		location	format		offset
+
+binding- is da binfing in the shader the data is coming from
+location- location of attribute in the vertex
+format- number of components of the attribute. vec2 has 2 components, float has 1 component, vec 4 has 4 etc. format uses the same enums as color formats god knows y so do be careful about that. if ya need just search up the format u be looking for.
+offset-the offset of the attribute in bytes in the vertex. Just use the offsetof() ting
+
+The pipeline needs to be provided with the binding descriptor and attribute descriptor!!
