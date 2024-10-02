@@ -470,12 +470,6 @@ private:
     VkDeviceMemory instanceBufferMemory;
     uint32_t instanceCount = 100;
 
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
-
-
     std::vector<VkBuffer> globalUniformBuffers;
     std::vector<VkDeviceMemory> globalUniformBuffersMemory;//
     std::vector<std::vector<VkBuffer>> uniformBuffers;
@@ -715,15 +709,9 @@ private:
         std::cout << "deleting index vertex buffer" << std::endl;
         vkDestroyBuffer(device, indexVertexBuffer, nullptr);
         vkFreeMemory(device, indexVertexBufferMemory, nullptr);
-        std::cout << "deleting vertex buffer" << std::endl;
-        vkDestroyBuffer(device, vertexBuffer, nullptr);
-        vkFreeMemory(device, vertexBufferMemory, nullptr);
         std::cout << "deleting instance buffer" << std::endl;
         vkDestroyBuffer(device, instanceBuffer, nullptr);
         vkFreeMemory(device, instanceBufferMemory, nullptr);
-        std::cout << "deleting index buffer" << std::endl;  
-        vkDestroyBuffer(device, indexBuffer, nullptr);
-        vkFreeMemory(device, indexBufferMemory, nullptr);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             std::cout << "deleting shader storage buffer " << i << std::endl;
