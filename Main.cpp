@@ -224,11 +224,6 @@ struct Vertex {
         bindingDescriptions[0].stride = sizeof(Vertex);
         bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-        //issues here
-        std::cout << bindingDescriptions[0].binding << " binding\n";
-        std::cout << bindingDescriptions[0].stride << " stride\n";
-        std::cout << bindingDescriptions[0].inputRate << " input rate\n" << std::endl;
-
         //instance data
         bindingDescriptions[1].binding = 1;
         bindingDescriptions[1].stride = sizeof(glm::vec3)*2;
@@ -343,6 +338,8 @@ The new structure starts with a vec2 which is only 8 bytes in size and therefore
 Now model has an offset of 8, view an offset of 72 and proj an offset of 136, none of which are multiples of 16. 
 To fix this problem we can use the alignas specifier introduced in C++11:
 */
+
+//uniformBufferObject is the object ubo
 struct UniformBufferObject {
     //glm::vec2 someVec2;
     //alignas(16) glm::mat4 model;
@@ -354,6 +351,9 @@ struct UniformBufferObject {
 
 struct GlobalUniformBufferObject {
     glm::mat4 proj;
+    glm::vec3 ambientLightCol;
+    glm::vec3 lightDir;
+    float ambientStrength;
 };
 
 struct ComputeUniformBufferObject {
@@ -467,6 +467,8 @@ private:
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,0), 4),
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,5), 2, 100)
     };
+
+    glm::vec3 lightDir = {1,0,0};
 
     std::vector<uint32_t> mipLevels;
     std::vector<VkImage> textureImages;
@@ -1074,10 +1076,6 @@ private:
 
         auto bindingDescriptions = Vertex::getBindingDescriptions();
         auto attributeDescriptions = Vertex::getAttributeDescriptions();
-
-        std::cout << bindingDescriptions[0].binding << " binding2\n";
-        std::cout << bindingDescriptions[0].stride << " stride2\n";
-        std::cout << bindingDescriptions[0].inputRate << " input rate2\n" << std::endl;
 
         vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
         vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -2050,7 +2048,7 @@ private:
         uboLayoutBinding.descriptorCount = 1;
         uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         uboLayoutBinding.pImmutableSamplers = nullptr;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
         std::array<VkDescriptorSetLayoutBinding, 1> bindingsGlobal = { uboLayoutBinding };
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -2333,7 +2331,13 @@ private:
                 if(!objects[i].render) {
                     continue;
                 }
-
+                /* TODO:
+                    if the model isnt scaled uniformly then the normals
+                    become invalid and need to be corrected with
+                    Normal = mat3(transpose(inverse(model))) * aNormal;  
+                    apparently inverse is expensive so its prolly best
+                    to do on the cpu and send the result to the gpu
+                 */
                 vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &objectDescriptorSets[i][currentFrame], 0, nullptr);
 
                 int instancesToDraw = objects[i].instanceCount; 
@@ -2384,6 +2388,7 @@ private:
         ImGui::Text("Camera");
         ImGui::SliderFloat("movement speed", &speed, 0.0f, 69.69f);   
         ImGui::InputFloat3("camera position", glm::value_ptr(pos), "%.5f");
+        ImGui::InputFloat3("light direction", glm::value_ptr(lightDir), "%.2f");
 
         if(ImGui::CollapsingHeader("objects")) {
             for(int i = 0; i < objects.size(); i++){
@@ -2500,6 +2505,10 @@ private:
         gubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 15000.0f);
 
         gubo.proj[1][1] *= -1;//GLM was made for opengl where the y coordinate of the clip coordinates is inverted ; this solves that
+
+        gubo.ambientLightCol = {1,1,1};
+        gubo.ambientStrength = 0.1f;
+        gubo.lightDir = glm::normalize(lightDir);
 
         void* data;
         vkMapMemory(device, globalUniformBuffersMemory[currentImage], 0, sizeof(gubo), 0, &data);
