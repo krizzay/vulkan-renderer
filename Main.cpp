@@ -215,6 +215,7 @@ struct Vertex {
     glm::vec3 pos;
     glm::vec3 color;
     glm::vec2 texCoord;
+    glm::vec3 normal;
 
     static std::array<VkVertexInputBindingDescription, 2> getBindingDescriptions() {
         std::array<VkVertexInputBindingDescription, 2> bindingDescriptions{};
@@ -222,6 +223,11 @@ struct Vertex {
         bindingDescriptions[0].binding = 0;
         bindingDescriptions[0].stride = sizeof(Vertex);
         bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        //issues here
+        std::cout << bindingDescriptions[0].binding << " binding\n";
+        std::cout << bindingDescriptions[0].stride << " stride\n";
+        std::cout << bindingDescriptions[0].inputRate << " input rate\n" << std::endl;
 
         //instance data
         bindingDescriptions[1].binding = 1;
@@ -231,8 +237,8 @@ struct Vertex {
         return bindingDescriptions;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 5> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 6> attributeDescriptions{};
 
         //vertex pos, changes per vertex
         attributeDescriptions[0].binding = 0;
@@ -263,6 +269,12 @@ struct Vertex {
         attributeDescriptions[4].location = 4;
         attributeDescriptions[4].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[4].offset = sizeof(glm::vec3);
+
+        //vertex normal, changes per vertex
+        attributeDescriptions[5].binding = 0;
+        attributeDescriptions[5].location = 5;
+        attributeDescriptions[5].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[5].offset = offsetof(Vertex, normal);
 
         return attributeDescriptions;
     }
@@ -1062,6 +1074,10 @@ private:
 
         auto bindingDescriptions = Vertex::getBindingDescriptions();
         auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+        std::cout << bindingDescriptions[0].binding << " binding2\n";
+        std::cout << bindingDescriptions[0].stride << " stride2\n";
+        std::cout << bindingDescriptions[0].inputRate << " input rate2\n" << std::endl;
 
         vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
         vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -2454,6 +2470,12 @@ private:
                     };
 
                     vertex.color = { 1.0f, 1.0f, 1.0f };
+
+                    vertex.normal = {
+                        attrib.normals[3 * index.vertex_index + 0],
+                        attrib.normals[3 * index.vertex_index + 1],
+                        attrib.normals[3 * index.vertex_index + 2]
+                    };
                     //could fuck up if 2 models have the same vertex
                     if (uniqueVertices.count(vertex) == 0) {
                         uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
