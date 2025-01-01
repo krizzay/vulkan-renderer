@@ -37,6 +37,6 @@ void main() {
     fragPos = vec3(oubo.model * vec4(inPosition, 1.0));
 
     vec3 ambient = gubo.ambientStrength * gubo.ambientCol;
-    fragColor = (inColor * inColOffset) * ambient;
+    fragColor = (inColor * inColOffset) * ambient; 
     fragTexCoord = inTexCoord;
 }

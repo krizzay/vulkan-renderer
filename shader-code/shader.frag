@@ -18,7 +18,7 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     float diff = max(dot(fragNormal, gubo.lightDir), 0.0);
-    vec3 diffuse = diff * vec3(1, 1, 1);
+    vec3 diffuse = diff * vec3(1, 1, 1); 
 
     vec3 result = (fragColor + diffuse) * texture(texSampler, fragTexCoord).rgb;
     outColor = vec4(result, 1.0);

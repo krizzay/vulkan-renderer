@@ -354,6 +354,7 @@ struct GlobalUniformBufferObject {
     glm::vec3 ambientLightCol;
     glm::vec3 lightDir;
     float ambientStrength;
+    alignas(16) glm::vec3 viewPos;
 };
 
 struct ComputeUniformBufferObject {
@@ -463,6 +464,7 @@ private:
         //object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,0), glm::vec3(0.5, 0, 0.5), true, 1),
         //object("models/model.obj", "textures/texture.png", glm::vec3(0,80,0), glm::vec3(0, 0.5, 0.5), true, 5),
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,1000,0), 1),
+        //object("models/miku.obj", "textures/miku.png", glm::vec3(0, -500, 0), 6), // the miku model is kinda fucked up (at least the textures)
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,500,0), 2),
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,0), 4),
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,5), 2, 100)
@@ -2509,6 +2511,7 @@ private:
         gubo.ambientLightCol = {1,1,1};
         gubo.ambientStrength = 0.1f;
         gubo.lightDir = glm::normalize(lightDir);
+        gubo.viewPos = pos; // direction the camera is lookin
 
         void* data;
         vkMapMemory(device, globalUniformBuffersMemory[currentImage], 0, sizeof(gubo), 0, &data);
