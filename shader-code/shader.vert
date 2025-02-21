@@ -4,7 +4,9 @@ layout(set = 0,binding = 0) uniform GlobalUniformBufferObject {
     mat4 proj;
     vec3 ambientCol;
     vec3 lightDir;
+    vec3 viewPos;
     float ambientStrength;
+    float specExp;
 } gubo;
 
 layout(set = 1,binding = 0) uniform ObjectUniformBufferObject {

@@ -96,7 +96,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
     }
 }
 
-float speed = 3.24f;
+float speed = 50.5f;
 bool resetPos = false;
 glm::vec3 movement;
 glm::vec2 oldPos = {0,0};
@@ -351,10 +351,12 @@ struct UniformBufferObject {
 
 struct GlobalUniformBufferObject {
     glm::mat4 proj;
-    glm::vec3 ambientLightCol;
-    glm::vec3 lightDir;
-    float ambientStrength;
+    alignas(16) glm::vec3 ambientLightCol;
+    alignas(16) glm::vec3 lightDir;
     alignas(16) glm::vec3 viewPos;
+    alignas(4) float ambientStrength;
+    alignas(4) float specExponent;
+    //alignas(16) glm::vec3 viewPos;
 };
 
 struct ComputeUniformBufferObject {
@@ -464,20 +466,21 @@ private:
         //object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,0), glm::vec3(0.5, 0, 0.5), true, 1),
         //object("models/model.obj", "textures/texture.png", glm::vec3(0,80,0), glm::vec3(0, 0.5, 0.5), true, 5),
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,1000,0), 1),
-        //object("models/miku.obj", "textures/miku.png", glm::vec3(0, -500, 0), 6), // the miku model is kinda fucked up (at least the textures)
+        object("models/cubeoid.obj", "textures/debug.png", glm::vec3(0, -500, 0), 4),
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,500,0), 2),
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,0), 4),
+        object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,-1000,0), 2),
+        object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,-1500,0), 2),
         object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,5), 2, 100)
     };
 
-    glm::vec3 lightDir = {1,0,0};
+    glm::vec3 lightDir = {1,0,-0.5};
 
     std::vector<uint32_t> mipLevels;
     std::vector<VkImage> textureImages;
     std::vector<VkDeviceMemory> textureImagesMemory;
 
     VkCommandPool commandPool;
-
 
     VkBuffer indexVertexBuffer;//
     VkDeviceMemory indexVertexBufferMemory;
@@ -544,12 +547,14 @@ private:
     float deltaTime;
     float epochTime = 0;
 
+    float specularExponent = 2;
+
 
     void initWindow() {
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwSwapInterval(0);
+        glfwSwapInterval(1);
 
         window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan :3", nullptr, nullptr);
         glfwSetWindowUserPointer(window, this);
@@ -1623,7 +1628,7 @@ private:
         
     }
     
-    //something in createtextureimage is giving an error :(
+    //something in createtextureimage is giving an error :(    what is it????? since when?? huh?
     void createTextureImages() {
         textureImages.resize(objects.size());
         textureImagesMemory.resize(objects.size());
@@ -2390,6 +2395,8 @@ private:
         ImGui::Text("Camera");
         ImGui::SliderFloat("movement speed", &speed, 0.0f, 69.69f);   
         ImGui::InputFloat3("camera position", glm::value_ptr(pos), "%.5f");
+        ImGui::Text("Scene");
+        ImGui::SliderFloat("specular exponent", &specularExponent, 0.0f, 128.69f);
         ImGui::InputFloat3("light direction", glm::value_ptr(lightDir), "%.2f");
 
         if(ImGui::CollapsingHeader("objects")) {
@@ -2509,9 +2516,14 @@ private:
         gubo.proj[1][1] *= -1;//GLM was made for opengl where the y coordinate of the clip coordinates is inverted ; this solves that
 
         gubo.ambientLightCol = {1,1,1};
-        gubo.ambientStrength = 0.1f;
+        gubo.ambientStrength = 0.05f;
         gubo.lightDir = glm::normalize(lightDir);
         gubo.viewPos = pos; // direction the camera is lookin
+        //gubo.viewPos = glm::vec3(0,0,1);
+        gubo.specExponent = specularExponent;
+
+        
+        //std::cout << "norm pos - " << glm::normalize(pos) << std::endl;
 
         void* data;
         vkMapMemory(device, globalUniformBuffersMemory[currentImage], 0, sizeof(gubo), 0, &data);
