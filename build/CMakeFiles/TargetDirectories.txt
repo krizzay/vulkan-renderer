@@ -1,0 +1,3 @@
+/home/krizzin/Desktop/vkprojtmp/build/CMakeFiles/vktst.dir
+/home/krizzin/Desktop/vkprojtmp/build/CMakeFiles/edit_cache.dir
+/home/krizzin/Desktop/vkprojtmp/build/CMakeFiles/rebuild_cache.dir
