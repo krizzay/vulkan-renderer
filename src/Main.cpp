@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <random>
 
+#include "engine-utils.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -28,22 +29,22 @@
 
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "depends/stb-master/stb_image.h"
+#include "stb-master/stb_image.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "depends/tiny_obj_loader.h"
+#include "tiny_obj_loader.h"
 
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "depends/imgui-master/imconfig.h"
-#include "depends/imgui-master/imgui_tables.cpp"
-#include "depends/imgui-master/imgui_internal.h"
-#include "depends/imgui-master/imgui.cpp"
-#include "depends/imgui-master/imgui_draw.cpp"
-#include "depends/imgui-master/imgui_widgets.cpp"
-#include "depends/imgui-master/imgui_demo.cpp"
-#include "depends/imgui-master/imgui_impl_glfw.cpp"
-#include "depends/imgui-master/imgui_impl_vulkan.cpp"
+#include "imgui-master/imconfig.h"
+#include "imgui-master/imgui_tables.cpp"
+#include "imgui-master/imgui_internal.h"
+#include "imgui-master/imgui.cpp"
+#include "imgui-master/imgui_draw.cpp"
+#include "imgui-master/imgui_widgets.cpp"
+#include "imgui-master/imgui_demo.cpp"
+#include "imgui-master/imgui_impl_glfw.cpp"
+#include "imgui-master/imgui_impl_vulkan.cpp"
 
 /*
         AT SOME POINT SEPERATE THE IMAGE SAMPLER AND IMAGE MAYBE IDK RESEARSH IF YOU NEED AND OR CAN / SHOULD DO THAT!
@@ -465,13 +466,13 @@ private:
     std::vector<object> objects = { 
         //object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,0), glm::vec3(0.5, 0, 0.5), true, 1),
         //object("models/model.obj", "textures/texture.png", glm::vec3(0,80,0), glm::vec3(0, 0.5, 0.5), true, 5),
-        object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,1000,0), 1),
-        object("models/cubeoid.obj", "textures/debug.png", glm::vec3(0, -500, 0), 4),
-        object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,500,0), 2),
-        object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,0), 4),
-        object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,-1000,0), 2),
-        object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,-1500,0), 2),
-        object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,5), 2, 100)
+        object("../models/aubrey.obj", "../textures/aubrey.png", glm::vec3(0,1000,0), 1),
+        object("../models/cubeoid.obj", "../textures/debug.png", glm::vec3(0, -500, 0), 4),
+        object("../models/aubrey.obj", "../textures/aubrey.png", glm::vec3(0,500,0), 2),
+        object("../models/aubrey.obj", "../textures/aubrey.png", glm::vec3(0,0,0), 4),
+        object("../models/aubrey.obj", "../textures/aubrey.png", glm::vec3(0,-1000,0), 2),
+        object("../models/aubrey.obj", "../textures/aubrey.png", glm::vec3(0,-1500,0), 2),
+        object("../models/aubrey.obj", "../textures/aubrey.png", glm::vec3(0,0,5), 2, 100)
     };
 
     glm::vec3 lightDir = {1,0,-0.5};
@@ -787,7 +788,7 @@ private:
     }
 
     void createInstance() {
-        if (enableValidationLayers && !checkValidationLayerSupport()) {
+        if (enableValidationLayers && !checkValidationLayerSupport(validationLayers)) {
             throw std::runtime_error("validation layers requested, but not available!");
         }
 
@@ -803,7 +804,7 @@ private:
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
 
-        auto extensions = getRequiredExtensions();
+        auto extensions = getRequiredExtensions(enableValidationLayers);
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -1058,8 +1059,8 @@ private:
     }
 
     void createGraphicsPipeline() {
-        auto vertShaderCode = readFile("shaders/vert.spv");
-        auto fragShaderCode = readFile("shaders/frag.spv");
+        auto vertShaderCode = readFile("../shaders/vert.spv");
+        auto fragShaderCode = readFile("../shaders/frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -1231,8 +1232,8 @@ private:
     }
     
     void createParticleGraphicsPipeline() {
-        auto vertShaderCode = readFile("shaders/partVert.spv");
-        auto fragShaderCode = readFile("shaders/partFrag.spv");
+        auto vertShaderCode = readFile("../shaders/partVert.spv");
+        auto fragShaderCode = readFile("../shaders/partFrag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -1381,7 +1382,7 @@ private:
     }
 
     void createComputePipeline() {
-        auto computeShaderCode = readFile("shaders/comp.spv");
+        auto computeShaderCode = readFile("../shaders/comp.spv");
 
         VkShaderModule computeShaderModule = createShaderModule(computeShaderCode);
 
@@ -3033,7 +3034,7 @@ private:
         return indices;
     }
 
-    std::vector<const char*> getRequiredExtensions() {
+/*    std::vector<const char*> getRequiredExtensions() {
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -3045,9 +3046,9 @@ private:
         }
 
         return extensions;
-    }
+    }*/
 
-    bool checkValidationLayerSupport() {
+/*	bool checkValidationLayerSupport() {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -3070,12 +3071,13 @@ private:
         }
 
         return true;
-    }
+    } */
 
     static std::vector<char> readFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
         if (!file.is_open()) {
+				std::cerr << filename << std::endl;
             throw std::runtime_error("failed to open file!");
         }
 
@@ -3090,20 +3092,22 @@ private:
         return buffer;
     }
 
-    float lerp(float a, float b, float t)
-    {
-        return a * (1.0 - t) + (b * t);
-    }
+	float lerp(float v0, float v1, float t) {
+ 		 return v0 + t * (v1 - v0);
+	}
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
         std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
         return VK_FALSE;
     }
+	
 };
 
 int main() {
     HelloTriangleApplication app;
+
+	testFun();
 
     try {
         app.run();
