@@ -21,7 +21,7 @@ Descriptor set
 Binding
 	The descriptor set is then bound for da drawing commands like the vertex or frame buffers.
 
-**da process of getting resources to the gpu and letting shader access them
+**the process of getting resources to the gpu and letting shader access them
 
 
 UBO vs SSBO
@@ -42,6 +42,6 @@ binding		location	format		offset
 binding- is da binfing in the shader the data is coming from
 location- location of attribute in the vertex
 format- number of components of the attribute. vec2 has 2 components, float has 1 component, vec 4 has 4 etc. format uses the same enums as color formats god knows y so do be careful about that. if ya need just search up the format u be looking for.
-offset-the offset of the attribute in bytes in the vertex. Just use the offsetof() ting
+offset-the offset of the attribute in bytes in the vertex. Just use the offsetof() 
 
 The pipeline needs to be provided with the binding descriptor and attribute descriptor!!
