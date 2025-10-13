@@ -5,7 +5,7 @@
 class compute {
 	public:
 
-		compute(VkDevice device);
+		compute(VkDevice device, int maxFramesInFlight);
 		~compute();
 
 		struct ComputeUniformBufferObject; 
@@ -19,6 +19,9 @@ class compute {
 
     	VkDevice m_device;
 		VkQueue m_computeQueue;
+
+		// maybe make const?
+		int m_maxFramesInFlight;
 
 	    VkDescriptorSetLayout m_computeDescriptorSetLayout;
     	VkPipelineLayout m_computePipelineLayout;
