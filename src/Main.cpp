@@ -15,7 +15,7 @@
 #include <random>
 
 #include "engine-utils.h"
-//#include "compute.h"
+#include "compute.h"
 #include "structs.h"
 
 #define GLFW_INCLUDE_VULKAN
@@ -283,6 +283,7 @@ private:
     VkPipelineLayout computePipelineLayout;
     VkPipeline computePipeline;
 
+	// render objects
     std::vector<object> objects = { 
         //object("models/aubrey.obj", "textures/aubrey.png", glm::vec3(0,0,0), glm::vec3(0.5, 0, 0.5), true, 1),
         //object("models/model.obj", "textures/texture.png", glm::vec3(0,80,0), glm::vec3(0, 0.5, 0.5), true, 5),
@@ -295,7 +296,9 @@ private:
         object("../models/aubrey.obj", "../textures/aubrey.png", glm::vec3(0,0,5), 2, 100)
     };
 
-    glm::vec3 lightDir = {1,0,-0.5};
+	// other engine modules
+	Compute compute;
+
 
     std::vector<uint32_t> mipLevels;
     std::vector<VkImage> textureImages;
@@ -362,13 +365,18 @@ private:
     VkDeviceMemory colorImageMemory;
     VkImageView colorImageView;
 
+	// renderer variables
+
     glm::vec3 rotat = { 0.5f, 0.0f, 0.5f };
     glm::vec3 pos = { 0.0f, 0.0f, 0.0f };
+	float specularExponent = 2;
+	glm::vec3 lightDir = {1,0,-0.5};
+
+	// time stuff
     double lastTime;
     float deltaTime;
     float epochTime = 0;
 
-    float specularExponent = 2;
 
 
     void initWindow() {
@@ -518,8 +526,8 @@ private:
 
         cleanupSwapChain();
 
-        vkDestroyPipeline(device, computePipeline, nullptr);
-        vkDestroyPipelineLayout(device, computePipelineLayout, nullptr);
+        //vkDestroyPipeline(device, computePipeline, nullptr);
+        //vkDestroyPipelineLayout(device, computePipelineLayout, nullptr);
 
         for (int i = 0; i < objects.size(); i++) {
             vkDestroySampler(device, textureSamplers[i], nullptr);
@@ -533,8 +541,8 @@ private:
             vkDestroyBuffer(device, globalUniformBuffers[i], nullptr);
             vkFreeMemory(device, globalUniformBuffersMemory[i], nullptr);
 
-            vkDestroyBuffer(device, computeUniformBuffers[i], nullptr);
-            vkFreeMemory(device, computeUniformBuffersMemory[i], nullptr);
+            //vkDestroyBuffer(device, computeUniformBuffers[i], nullptr);
+            //vkFreeMemory(device, computeUniformBuffersMemory[i], nullptr);
         }
 
         for (int i = 0; i < objects.size(); i++) {
@@ -547,7 +555,7 @@ private:
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
         vkDestroyDescriptorSetLayout(device, globalDescriptorSetLayout, nullptr);
         vkDestroyDescriptorSetLayout(device, objectDescriptorSetLayout, nullptr);
-        vkDestroyDescriptorSetLayout(device, computeDescriptorSetLayout, nullptr);
+        //vkDestroyDescriptorSetLayout(device, computeDescriptorSetLayout, nullptr);
         std::cout << "deleting index vertex buffer" << std::endl;
         vkDestroyBuffer(device, indexVertexBuffer, nullptr);
         vkFreeMemory(device, indexVertexBufferMemory, nullptr);
@@ -564,8 +572,8 @@ private:
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
             vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-            vkDestroySemaphore(device, computeFinishedSemaphores[i], nullptr);
-            vkDestroyFence(device, computeInFlightFences[i], nullptr);
+            //vkDestroySemaphore(device, computeFinishedSemaphores[i], nullptr);
+            //vkDestroyFence(device, computeInFlightFences[i], nullptr);
             vkDestroyFence(device, inFlightFences[i], nullptr);
         }
 
@@ -741,7 +749,7 @@ private:
         }
 
         vkGetDeviceQueue(device, indices.graphicsAndComputeFamily.value(), 0, &graphicsQueue);
-        vkGetDeviceQueue(device, indices.graphicsAndComputeFamily.value(), 0, &computeQueue);
+        vkGetDeviceQueue(device, indices.graphicsAndComputeFamily.value(), 0, &computeQueue); //?
         vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
     }
 
@@ -1201,7 +1209,7 @@ private:
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
 
-    void createComputePipeline() {
+    /*void createComputePipeline() {
         auto computeShaderCode = readFile("../shaders/comp.spv");
 
         VkShaderModule computeShaderModule = createShaderModule(computeShaderCode, device);
@@ -1239,7 +1247,7 @@ private:
         }
 
         vkDestroyShaderModule(device, computeShaderModule, nullptr);
-    }
+    }*/
 
     void createFramebuffers() {
         swapChainFramebuffers.resize(swapChainImageViews.size());
@@ -1886,7 +1894,7 @@ private:
         }
     }
 
-    void CreateComputeDescriptorSetLayout() {
+    /*void CreateComputeDescriptorSetLayout() {
 
         std::array<VkDescriptorSetLayoutBinding, 3> layoutBindings{};
         layoutBindings[0].binding = 0;
@@ -1916,7 +1924,7 @@ private:
             throw std::runtime_error("failed to create compute descriptor set layout!");
         }
 
-    }
+    }*/
 
     void createUniformBuffers() {
         //create global uniform buffer
@@ -1947,7 +1955,7 @@ private:
         }
     }
 
-    void createComputeUniformBuffers() {
+    /*void createComputeUniformBuffers() {
         VkDeviceSize bufferSize = sizeof(ComputeUniformBufferObject);
 
         computeUniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
@@ -1958,7 +1966,7 @@ private:
             createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
                 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, computeUniformBuffers[i], computeUniformBuffersMemory[i], device, physicalDevice);
         }
-    }
+    } */
 
     void createTextureImageViews() {
         textureImageViews.resize(objects.size());
@@ -2209,9 +2217,9 @@ private:
     void createSyncObjects() {
         imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        computeFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        //computeFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-        computeInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+        //computeInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -2226,10 +2234,10 @@ private:
                 vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create synchronization objects for a frame!");
             }
-            if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &computeFinishedSemaphores[i]) != VK_SUCCESS ||
+            /*if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &computeFinishedSemaphores[i]) != VK_SUCCESS ||
                 vkCreateFence(device, &fenceInfo, nullptr, &computeInFlightFences[i]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create compute synchronization objects for a frame!");
-            }
+            }*/
         }
     }
 
@@ -2334,7 +2342,7 @@ private:
 
     }
 
-    void updateComputeUniformBuffer(uint32_t currentImage) {
+    /*void updateComputeUniformBuffer(uint32_t currentImage) {
         ComputeUniformBufferObject ubo{};
 
         ubo.colOffset = glm::vec3(1, 0, 0);
@@ -2343,7 +2351,7 @@ private:
         vkMapMemory(device, computeUniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
         memcpy(data, &ubo, sizeof(ubo));
         vkUnmapMemory(device, computeUniformBuffersMemory[currentImage]);
-    }
+    }*/
 
     void createColorResources() {
         VkFormat colorFormat = swapChainImageFormat;
@@ -2484,7 +2492,7 @@ private:
         }
     }
 
-    void createComputeDescriptorSets() {
+    /*void createComputeDescriptorSets() {
         std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, computeDescriptorSetLayout);
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -2541,9 +2549,9 @@ private:
 
             vkUpdateDescriptorSets(device, 3, descriptorWrites.data(), 0, nullptr);
         }
-    }
+    }*/
 
-    void createComputeCommandBuffers() {
+    /*void createComputeCommandBuffers() {
         computeCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
         VkCommandBufferAllocateInfo allocInfo{};
@@ -2578,7 +2586,7 @@ private:
         if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("failed to record compute command buffer!");
         }
-    }
+    }*/
 
     void drawFrame() {
         VkSubmitInfo submitInfo{};

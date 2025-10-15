@@ -2,29 +2,32 @@
 #include "vulkan/vulkan.h"
 #include <vector>
 
-class compute {
+class Compute {
 	public:
 
-		compute(VkDevice device, int maxFramesInFlight);
-		~compute();
-
-		struct ComputeUniformBufferObject; 
+		Compute(VkDevice device, int maxFramesInFlight, uint32_t particleCount);
+		~Compute();
 
 		void CreateComputeDescriptorSetLayout(); 
 		void createComputePipeline(); 
 		void createComputeDescriptorSets(); 
 		void createComputeCommandBuffers(); 
+		void createComputeSyncObjects();
+
+		void updateComputeUniformBuffer();
+		void recordComputeCommandBuffer();
 									
 	private:
 
-    	VkDevice m_device;
+    		VkDevice m_device;
 		VkQueue m_computeQueue;
 
 		// maybe make const?
 		int m_maxFramesInFlight;
+		uint32_t m_particleCount
 
-	    VkDescriptorSetLayout m_computeDescriptorSetLayout;
-    	VkPipelineLayout m_computePipelineLayout;
+	    	VkDescriptorSetLayout m_computeDescriptorSetLayout;
+    		VkPipelineLayout m_computePipelineLayout;
 		VkPipeline m_computePipeline;
 
 		std::vector<VkBuffer> m_computeUniformBuffers;
