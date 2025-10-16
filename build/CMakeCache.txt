@@ -22,7 +22,7 @@ CMAKE_AR:FILEPATH=/usr/bin/ar
 
 //Choose the type of build, options are: None Debug Release RelWithDebInfo
 // MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=
+CMAKE_BUILD_TYPE:STRING=Debug
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -229,15 +229,6 @@ Vulkan_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libvulkan.so
 
 //The directory containing a CMake configuration file for glfw3.
 glfw3_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/glfw3
-
-//Value Computed by CMake
-vktst_BINARY_DIR:STATIC=/home/krizzin/Desktop/vulkanProject/build
-
-//Value Computed by CMake
-vktst_IS_TOP_LEVEL:STATIC=ON
-
-//Value Computed by CMake
-vktst_SOURCE_DIR:STATIC=/home/krizzin/Desktop/vulkanProject
 
 //Value Computed by CMake
 vulkanTest_BINARY_DIR:STATIC=/home/krizzin/Desktop/vulkanProject/build

@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstring>
 #include <fstream>
+#include <string>
 #include "engine-utils.h"
 
 bool checkValidationLayerSupport( std::vector<const char*> validationLayers ) {

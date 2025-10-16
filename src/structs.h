@@ -1,6 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
+#include <optional>
+#include <array>
 
 struct pushConstans {
     glm::mat4 view;  //64 / 128 bytes available

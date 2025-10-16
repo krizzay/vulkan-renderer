@@ -153,6 +153,30 @@ src/Main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/vulkanTest.dir/build.make CMakeFiles/vulkanTest.dir/src/Main.cpp.s
 .PHONY : src/Main.cpp.s
 
+src/compute.o: src/compute.cpp.o
+.PHONY : src/compute.o
+
+# target to build an object file
+src/compute.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/vulkanTest.dir/build.make CMakeFiles/vulkanTest.dir/src/compute.cpp.o
+.PHONY : src/compute.cpp.o
+
+src/compute.i: src/compute.cpp.i
+.PHONY : src/compute.i
+
+# target to preprocess a source file
+src/compute.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/vulkanTest.dir/build.make CMakeFiles/vulkanTest.dir/src/compute.cpp.i
+.PHONY : src/compute.cpp.i
+
+src/compute.s: src/compute.cpp.s
+.PHONY : src/compute.s
+
+# target to generate assembly for a file
+src/compute.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/vulkanTest.dir/build.make CMakeFiles/vulkanTest.dir/src/compute.cpp.s
+.PHONY : src/compute.cpp.s
+
 src/engine-utils.o: src/engine-utils.cpp.o
 .PHONY : src/engine-utils.o
 
@@ -189,6 +213,9 @@ help:
 	@echo "... src/Main.o"
 	@echo "... src/Main.i"
 	@echo "... src/Main.s"
+	@echo "... src/compute.o"
+	@echo "... src/compute.i"
+	@echo "... src/compute.s"
 	@echo "... src/engine-utils.o"
 	@echo "... src/engine-utils.i"
 	@echo "... src/engine-utils.s"
