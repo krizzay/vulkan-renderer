@@ -8,7 +8,7 @@
 #include <array>
 #include <cstring>
 
-Compute::Compute(VkDevice device, int maxFramesInFlight, uint32_t particleCount) 
+Compute::Compute(VkDevice *device, int maxFramesInFlight, uint32_t particleCount) 
 		: m_device {device}
 		, m_maxFramesInFlight {maxFramesInFlight}
 		, m_particleCount {particleCount} 
@@ -17,21 +17,20 @@ Compute::Compute(VkDevice device, int maxFramesInFlight, uint32_t particleCount)
 }
 
 Compute::~Compute(){
-        vkDestroyPipeline(m_device, m_pipeline, nullptr);
-        vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+        vkDestroyPipeline(*m_device, m_pipeline, nullptr);
+        vkDestroyPipelineLayout(*m_device, m_pipelineLayout, nullptr);
 
         for (size_t i = 0; i < m_maxFramesInFlight; i++) {
-            vkDestroyBuffer(m_device, m_uniformBuffers[i], nullptr);
-            vkFreeMemory(m_device, m_uniformBuffersMemory[i], nullptr);
+            vkDestroyBuffer(*m_device, m_uniformBuffers[i], nullptr);
+            vkFreeMemory(*m_device, m_uniformBuffersMemory[i], nullptr);
         }
 
-        vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
+        vkDestroyDescriptorSetLayout(*m_device, m_descriptorSetLayout, nullptr);
 
         for (size_t i = 0; i < m_maxFramesInFlight; i++) {
-            vkDestroySemaphore(m_device, m_finishedSemaphores[i], nullptr);
-            vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
+            vkDestroySemaphore(*m_device, m_finishedSemaphores[i], nullptr);
+            vkDestroyFence(*m_device, m_inFlightFences[i], nullptr);
         }
-
 }
 
 void Compute::CreateComputeDescriptorSetLayout() {
@@ -59,7 +58,7 @@ void Compute::CreateComputeDescriptorSetLayout() {
         layoutInfo.bindingCount = 3;
         layoutInfo.pBindings = layoutBindings.data();
 
-        if (vkCreateDescriptorSetLayout(m_device, &layoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS) {
+        if (vkCreateDescriptorSetLayout(*m_device, &layoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create compute descriptor set layout!");
         }
 
@@ -68,7 +67,7 @@ void Compute::CreateComputeDescriptorSetLayout() {
 void Compute::createComputePipeline() {
         auto computeShaderCode = readFile("../shaders/comp.spv");
 
-        VkShaderModule computeShaderModule = createShaderModule(computeShaderCode, m_device);
+        VkShaderModule computeShaderModule = createShaderModule(computeShaderCode, *m_device);
 
         VkPipelineShaderStageCreateInfo computeShaderStageInfo{};
         computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -89,7 +88,7 @@ void Compute::createComputePipeline() {
         computePipelineLayoutInfo.pPushConstantRanges = &pushConstant;
         computePipelineLayoutInfo.pushConstantRangeCount = 1;
 
-        if (vkCreatePipelineLayout(m_device, &computePipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
+        if (vkCreatePipelineLayout(*m_device, &computePipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create compute pipeline layout!");
         }
 
@@ -98,11 +97,11 @@ void Compute::createComputePipeline() {
         computePipelineInfo.layout = m_pipelineLayout;
         computePipelineInfo.stage = computeShaderStageInfo;
 
-        if (vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS) {
+        if (vkCreateComputePipelines(*m_device, VK_NULL_HANDLE, 1, &computePipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS) {
             throw std::runtime_error("failed to create compute pipeline!");
         }
 
-        vkDestroyShaderModule(m_device, computeShaderModule, nullptr);
+        vkDestroyShaderModule(*m_device, computeShaderModule, nullptr);
 }	
 
 void Compute::createComputeDescriptorSets(VkDescriptorPool descriptorPool, std::vector<VkBuffer> shaderStorageBuffers) {
@@ -115,7 +114,7 @@ void Compute::createComputeDescriptorSets(VkDescriptorPool descriptorPool, std::
 
         m_descriptorSets.resize(m_maxFramesInFlight);
 
-        if (vkAllocateDescriptorSets(m_device, &allocInfo, m_descriptorSets.data()) != VK_SUCCESS) {
+        if (vkAllocateDescriptorSets(*m_device, &allocInfo, m_descriptorSets.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate descriptor sets! compute");
         }
 
@@ -160,7 +159,7 @@ void Compute::createComputeDescriptorSets(VkDescriptorPool descriptorPool, std::
             descriptorWrites[2].descriptorCount = 1;
             descriptorWrites[2].pBufferInfo = &storageBufferInfoCurrentFrame;
 
-            vkUpdateDescriptorSets(m_device, 3, descriptorWrites.data(), 0, nullptr);
+            vkUpdateDescriptorSets(*m_device, 3, descriptorWrites.data(), 0, nullptr);
         }
 }	
 
@@ -174,7 +173,7 @@ void Compute::createComputeCommandBuffers(VkCommandPool commandPool) {
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = (uint32_t)m_commandBuffers.size();
 
-        if (vkAllocateCommandBuffers(m_device, &allocInfo, m_commandBuffers.data()) != VK_SUCCESS) {
+        if (vkAllocateCommandBuffers(*m_device, &allocInfo, m_commandBuffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate compute command buffers!");
         }
 }
@@ -190,7 +189,7 @@ void Compute::createComputeUniformBuffers(VkPhysicalDevice physicalDevice) {
         for (size_t i = 0; i < m_maxFramesInFlight; i++) {
             createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
                 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_uniformBuffers[i], m_uniformBuffersMemory[i], 
-				m_device, physicalDevice);
+				*m_device, physicalDevice);
         }
 }
 
@@ -208,8 +207,8 @@ void Compute::createComputeSyncObjects() {
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	for (size_t i = 0; i < m_maxFramesInFlight; i++){
-            if (vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_finishedSemaphores[i]) != VK_SUCCESS ||
-                vkCreateFence(m_device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS) {
+            if (vkCreateSemaphore(*m_device, &semaphoreInfo, nullptr, &m_finishedSemaphores[i]) != VK_SUCCESS ||
+                vkCreateFence(*m_device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create compute synchronization objects for a frame!");
             }
 	}
@@ -224,9 +223,9 @@ void Compute::updateComputeUniformBuffer(uint32_t currentImage) {
         ubo.colOffset = glm::vec3(1, 0, 0);
 
         void* data;
-        vkMapMemory(m_device, m_uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+        vkMapMemory(*m_device, m_uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
         memcpy(data, &ubo, sizeof(ubo));
-        vkUnmapMemory(m_device, m_uniformBuffersMemory[currentImage]);
+        vkUnmapMemory(*m_device, m_uniformBuffersMemory[currentImage]);
     }
 
 void Compute::recordComputeCommandBuffer(float deltaTime, uint32_t currentFrame) {

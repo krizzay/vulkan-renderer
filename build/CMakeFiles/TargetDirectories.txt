@@ -1,3 +1,0 @@
-/home/krizzin/Desktop/vulkanProject/build/CMakeFiles/vulkanTest.dir
-/home/krizzin/Desktop/vulkanProject/build/CMakeFiles/edit_cache.dir
-/home/krizzin/Desktop/vulkanProject/build/CMakeFiles/rebuild_cache.dir

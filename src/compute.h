@@ -9,7 +9,7 @@ class Compute {
 		std::vector<VkFence> m_inFlightFences;
 		std::vector<VkCommandBuffer> m_commandBuffers;
 
-		Compute(VkDevice device, int maxFramesInFlight, uint32_t particleCount);
+		Compute(VkDevice* device, int maxFramesInFlight, uint32_t particleCount);
 		~Compute();
 
 		// setup
@@ -28,7 +28,7 @@ class Compute {
 									
 	private:
 
-		VkDevice m_device;
+		VkDevice *m_device;
 
 		// maybe make const?
 		int m_maxFramesInFlight;
