@@ -11,7 +11,8 @@ add_executable(${PROJECT_NAME}
 				src/engine-utils.cpp
 				src/compute.cpp
 				src/engine.cpp
-				src/window.cpp)
+				src/window.cpp
+				src/resources.cpp)
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})

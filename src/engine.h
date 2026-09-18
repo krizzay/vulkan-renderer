@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "compute.h"
+#include "resources.h"
 #include "structs.h"
 #include "window.h"
 
@@ -23,13 +24,15 @@ class Engine {
 #else
 		const bool enableValidationLayers = true;
 #endif
+		std::unique_ptr<Compute> compute;
+		std::unique_ptr<Resources> resources;
+
     	VkSurfaceKHR surface;
 
 		bool resetPos = false;
 		bool cursorFree = false;
 		bool framebufferResized = false;
 
-		// camera things
 		glm::vec3 movement;
 		glm::vec2 oldPos = {0,0};
 		glm::vec2 moveAmount = glm::vec2(0, 1.570795);
@@ -45,14 +48,33 @@ class Engine {
     
 		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
-		VkSwapchainKHR swapChain;
-		std::vector<VkImage> swapChainImages;
-		VkFormat swapChainImageFormat;
-		VkExtent2D swapChainExtent;
+		VkSwapchainKHR swapchain;
+		std::vector<VkImage> swapchainImages;
+		VkFormat swapchainImageFormat;
+		VkExtent2D swapchainExtent;
+		std::vector<VkImageView> swapchainImageViews;
+		std::vector<VkFramebuffer> swapchainFramebuffers;
 
-		std::unique_ptr<Compute> compute;
+    	VkRenderPass renderPass;
 
-		Engine(uint32_t width, uint32_t height);
+		VkPipelineLayout particlePipelineLayout;
+		VkPipeline particleGraphicsPipeline;
+
+		VkPipelineLayout pipelineLayout;
+		VkPipeline graphicsPipeline;
+
+    	VkCommandPool commandPool;
+		std::vector<VkCommandBuffer> commandBuffers;
+
+		VkCommandBuffer setupBuffer;
+
+		std::vector<VkSemaphore> imageAvailableSemaphores;
+		std::vector<VkSemaphore> renderFinishedSemaphores;
+		std::vector<VkFence> inFlightFences;
+		uint32_t currentFrame = 0;
+
+	public:
+		Engine(uint32_t width, uint32_t height, uint32_t max_frames_in_flight, uint32_t particle_count);
 		~Engine();
 
 		void createInstance();
@@ -61,7 +83,10 @@ class Engine {
 		void pickPhysicalDevice(); 
 		void createLogicalDevice(); 
 		void initCompute(const uint32_t particleCount, const int maxFramesInFlight);
-		void createSwapChain(); 
+		void initResources();
+		void createSwapchain(); 
+
+		void tmpSetResourcesThings();
 
 		void createImageViews(); // image view for swap chain 
 		void createRenderPass(); 
@@ -69,24 +94,20 @@ class Engine {
 		void createParticleGraphicsPipeline(); 
 		void createCommandPool(); 
 
-		//void setupCommandBuffer();//my garbage code // see if faster 
+		//void setupCommandBuffer(); // consider
 
 		void createFramebuffers(); 
 
+		void createCommandBuffers();
 		void createSyncObjects(); 
 
-		bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-		bool isDeviceSuitable(VkPhysicalDevice device);
-		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
-    	VkSampleCountFlagBits getMaxUsableSampleCount();
-		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-
-		VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-		VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-		VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		void initVulkan();
+		void cleanupSwapChain();
+		void cleanup();
+		void recreateSwapChain();
+		void initImgui();
 
 	private:
 
@@ -101,7 +122,11 @@ class Engine {
 
 		const uint32_t WIDTH = 800;
 		const uint32_t HEIGHT = 600;
+		const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+		const uint32_t PARTICLE_COUNT = 2;
 
-
+		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+		bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+		bool isDeviceSuitable(VkPhysicalDevice device);
 
 };

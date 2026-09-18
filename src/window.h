@@ -8,7 +8,7 @@
 
 #include "structs.h"
 
-class Window{
+class Window {
 public:
 
     	static GLFWwindow* window;
@@ -34,3 +34,4 @@ public:
 private:
 
 };
+

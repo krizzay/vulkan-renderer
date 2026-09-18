@@ -4,6 +4,7 @@
 #include <optional>
 #include <array>
 #include <vector>
+#include <string>
 
 struct pushConstans {
     glm::mat4 view;  //64 / 128 bytes available
@@ -177,4 +178,48 @@ struct ComputeUniformBufferObject {
  You can use this feature to put descriptors that vary per-object and descriptors that are shared into separate descriptor sets. 
  In that case you avoid rebinding most of the descriptors across draw calls which is potentially more efficient.
 */
+
+class object {
+public:
+    std::string modelPath;
+    std::string texturePath;
+
+    glm::vec3 position;
+    glm::vec3 rotation;
+    glm::vec3 scale;
+    bool rotate;
+
+    uint32_t instanceCount;
+
+    bool render = true;
+
+    object(std::string _modelPath, std::string _texturePath, glm::vec3 _pos, uint32_t _scale) {
+        modelPath = _modelPath;
+        texturePath = _texturePath;
+        position = _pos;
+        rotate = false;
+        instanceCount = 1;
+        scale = glm::vec3(_scale);
+    }
+
+    object(std::string _modelPath, std::string _texturePath, glm::vec3 _pos, uint32_t _scale, uint32_t _instanceCount) {
+        modelPath = _modelPath;
+        texturePath = _texturePath;
+        position = _pos;
+        rotate = false;
+        instanceCount = _instanceCount;
+        scale = glm::vec3(_scale);
+    }
+
+    object(std::string _modelPath, std::string _texturePath, glm::vec3 _pos, glm::vec3 _rotate, uint32_t _instanceCount, uint32_t _scale) {
+        modelPath = _modelPath;
+        texturePath = _texturePath;
+        position = _pos;
+        rotate = true;
+        rotation = _rotate;
+        instanceCount = _instanceCount;
+        scale = glm::vec3(_scale, _scale, _scale);
+    }
+};
+
 

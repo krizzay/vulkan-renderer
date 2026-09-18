@@ -28,7 +28,7 @@ class Compute {
 									
 	private:
 
-		VkDevice *m_device;
+		VkDevice *m_device; // cahgne to weak ptr??? (i htink weak ptr is the rifgh call here)
 
 		// maybe make const?
 		int m_maxFramesInFlight;
