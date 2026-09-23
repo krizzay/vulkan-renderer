@@ -86,7 +86,7 @@ class Engine {
 		void initResources();
 		void createSwapchain(); 
 
-		void tmpSetResourcesThings();
+		void setResourcesThings();
 
 		void createImageViews(); // image view for swap chain 
 		void createRenderPass(); 

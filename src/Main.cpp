@@ -58,12 +58,12 @@ class Renderer {
 public:
 
     void run() {
-		engine = std::unique_ptr<Engine>(new Engine(WIDTH, HEIGHT, MAX_FRAMES_IN_FLIGHT, PARTICLE_COUNT));
+		engine = std::make_unique<Engine>(WIDTH, HEIGHT, MAX_FRAMES_IN_FLIGHT, PARTICLE_COUNT);
 		Window::initWindow();
         engine->initVulkan();
         engine->initImgui();
         mainLoop();
-        engine->cleanup();
+		engine.reset(); // call destructor
     }
 
 private:

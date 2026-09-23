@@ -12,16 +12,11 @@
 #include <set>
 #include <algorithm>
 
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui-master/imconfig.h"
-#include "imgui-master/imgui_tables.cpp"
 #include "imgui-master/imgui_internal.h"
-#include "imgui-master/imgui.cpp"
-#include "imgui-master/imgui_draw.cpp"
-#include "imgui-master/imgui_widgets.cpp"
-#include "imgui-master/imgui_demo.cpp"
-#include "imgui-master/imgui_impl_glfw.cpp"
-#include "imgui-master/imgui_impl_vulkan.cpp"
+#include "imgui-master/imgui.h"
+#include "imgui-master/imgui_impl_glfw.h"
+#include "imgui-master/imgui_impl_vulkan.h"
 
 const std::string shaderPath = "../shaders/";
 
@@ -116,9 +111,7 @@ Engine::Engine(uint32_t width, uint32_t height, uint32_t max_frames_in_flight, u
 }
 
 Engine::~Engine(){
-
-	std::cout << "engine object is being deconstructed!" << std::endl;
-
+	cleanup();
 }
 
 void Engine::createInstance() {
@@ -789,7 +782,7 @@ void Engine::createParticleGraphicsPipeline() {
 	vkDestroyShaderModule(device, vertShaderModule, nullptr);
 }
 
-void Engine::tmpSetResourcesThings() {
+void Engine::setResourcesThings() {
 
 	auto msaaSamplesSptr = std::make_shared<VkSampleCountFlagBits>(msaaSamples);
 	resources->setMsaaSamples(msaaSamplesSptr);
@@ -891,7 +884,7 @@ void Engine::initVulkan() {
 	initResources();
 	createSwapchain(); 
 
-	tmpSetResourcesThings();
+	setResourcesThings();
 
 	createImageViews(); // image view for swap chain 
 	createRenderPass(); 
@@ -961,48 +954,13 @@ void Engine::cleanup() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
+	compute.reset();
+
 	cleanupSwapChain();
 
-	const size_t numObjects = resources->objects.size();
+	resources.reset();
 
-	for (size_t i = 0; i < numObjects; i++) {
-		vkDestroySampler(device, resources->textureSamplers[i], nullptr);
-		vkDestroyImageView(device, resources->textureImageViews[i], nullptr);
-
-		vkDestroyImage(device, resources->textureImages[i], nullptr);
-		vkFreeMemory(device, resources->textureImagesMemory[i], nullptr);
-	}
-
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkDestroyBuffer(device, resources->globalUniformBuffers[i], nullptr);
-		vkFreeMemory(device, resources->globalUniformBuffersMemory[i], nullptr);
-	}
-
-	for (size_t i = 0; i < numObjects; i++) {
-		for (size_t j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
-			vkDestroyBuffer(device, resources->uniformBuffers[i][j], nullptr);
-			vkFreeMemory(device, resources->uniformBuffersMemory[i][j], nullptr);
-		}
-	}
-
-	vkDestroyDescriptorPool(device, resources->descriptorPool, nullptr);
-	vkDestroyDescriptorSetLayout(device, resources->globalDescriptorSetLayout, nullptr);
-	vkDestroyDescriptorSetLayout(device, resources->objectDescriptorSetLayout, nullptr);
-
-	std::cout << "deleting index vertex buffer" << std::endl;
-	vkDestroyBuffer(device, resources->indexVertexBuffer, nullptr);
-	vkFreeMemory(device, resources->indexVertexBufferMemory, nullptr);
-
-	std::cout << "deleting instance buffer" << std::endl;
-	vkDestroyBuffer(device, resources->instanceBuffer, nullptr);
-	vkFreeMemory(device, resources->instanceBufferMemory, nullptr);
-
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		std::cout << "deleting shader storage buffer " << i << std::endl;
-		vkDestroyBuffer(device, resources->shaderStorageBuffers[i], nullptr);
-		vkFreeMemory(device, resources->shaderStorageBuffersMemory[i], nullptr);
-	}
-
+	// sync objects
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
@@ -1011,7 +969,6 @@ void Engine::cleanup() {
 
 	vkDestroyCommandPool(device, commandPool, nullptr);
 
-	std::cout << "we are about to destroy device" << std::endl;
 	vkDestroyDevice(device, nullptr);
 
 	if (enableValidationLayers) {

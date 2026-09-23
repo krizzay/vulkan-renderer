@@ -74,7 +74,7 @@ class Resources {
 
 	public:
 		Resources(VkDevice& device, VkPhysicalDevice physicalDevice, VkQueue graphicsQueue);
-		~Resources() = default;
+		~Resources();
 
 		void createDescriptorSetLayout();
 
@@ -115,5 +115,8 @@ class Resources {
 
 		uint32_t PARTICLE_COUNT = 1024;
 		uint32_t MAX_FRAMES_IN_FLIGHT = 3;
+
+	private:
+		void cleanup();
 
 };

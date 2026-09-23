@@ -334,6 +334,55 @@ Resources::Resources(VkDevice& device, VkPhysicalDevice physicalDevice, VkQueue 
 	m_graphicsQueue = std::make_shared<VkQueue>(graphicsQueue);
 }
 
+Resources::~Resources() {
+
+	cleanup();
+}
+
+void Resources::cleanup() {
+
+	const size_t numObjects = objects.size();
+
+	// textures
+	for (size_t i = 0; i < numObjects; i++) {
+		vkDestroySampler(*m_device, textureSamplers[i], nullptr);
+		vkDestroyImageView(*m_device, textureImageViews[i], nullptr);
+
+		vkDestroyImage(*m_device, textureImages[i], nullptr);
+		vkFreeMemory(*m_device, textureImagesMemory[i], nullptr);
+	}
+
+	// gubo
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		vkDestroyBuffer(*m_device, globalUniformBuffers[i], nullptr);
+		vkFreeMemory(*m_device, globalUniformBuffersMemory[i], nullptr);
+	}
+
+	// ubo
+	for (size_t i = 0; i < numObjects; i++) {
+		for (size_t j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+			vkDestroyBuffer(*m_device, uniformBuffers[i][j], nullptr);
+			vkFreeMemory(*m_device, uniformBuffersMemory[i][j], nullptr);
+		}
+	}
+
+	vkDestroyDescriptorPool(*m_device, descriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(*m_device, globalDescriptorSetLayout, nullptr);
+	vkDestroyDescriptorSetLayout(*m_device, objectDescriptorSetLayout, nullptr);
+
+	vkDestroyBuffer(*m_device, indexVertexBuffer, nullptr);
+	vkFreeMemory(*m_device, indexVertexBufferMemory, nullptr);
+
+	vkDestroyBuffer(*m_device, instanceBuffer, nullptr);
+	vkFreeMemory(*m_device, instanceBufferMemory, nullptr);
+
+	// ssbo
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		vkDestroyBuffer(*m_device, shaderStorageBuffers[i], nullptr);
+		vkFreeMemory(*m_device, shaderStorageBuffersMemory[i], nullptr);
+	}
+}
+
 void Resources::createDescriptorSetLayout() {
 	VkDescriptorSetLayoutBinding uboLayoutBinding{};
 	uboLayoutBinding.binding = 0;
