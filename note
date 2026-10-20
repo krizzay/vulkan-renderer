@@ -1,0 +1,14 @@
+
+
+main.cpp -> runtime.cpp -> engine.h -> engineImpl.cpp +-> resources.cpp
+										|			  +-> compute.cpp
+										|			  +-> window.cpp
+										\/				   _/
+										vulkanState.cpp	 </									
+										(singelton)
+										(how a buncha sub classes for specific collections of items,
+										like commands, swapchain, etc.)
+										(how much can be made const? maybe a read only interface??? idk!)
+										
+										engine-utils.cpp
+										structs.h

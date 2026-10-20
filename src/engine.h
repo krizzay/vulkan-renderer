@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "vk-state.h"
 #include "compute.h"
 #include "resources.h"
 #include "structs.h"
@@ -26,52 +27,8 @@ class Engine {
 #endif
 		std::unique_ptr<Compute> compute;
 		std::unique_ptr<Resources> resources;
-
-    	VkSurfaceKHR surface;
-
-		bool resetPos = false;
-		bool cursorFree = false;
-		bool framebufferResized = false;
-
-		glm::vec3 movement;
-		glm::vec2 oldPos = {0,0};
-		glm::vec2 moveAmount = glm::vec2(0, 1.570795);
-
-		VkInstance instance;
-    	VkDebugUtilsMessengerEXT debugMessenger;
-
-		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-		VkDevice device;
-
-		VkQueue graphicsQueue;
-		VkQueue presentQueue;
-    
-		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-
-		VkSwapchainKHR swapchain;
-		std::vector<VkImage> swapchainImages;
-		VkFormat swapchainImageFormat;
-		VkExtent2D swapchainExtent;
-		std::vector<VkImageView> swapchainImageViews;
-		std::vector<VkFramebuffer> swapchainFramebuffers;
-
-    	VkRenderPass renderPass;
-
-		VkPipelineLayout particlePipelineLayout;
-		VkPipeline particleGraphicsPipeline;
-
-		VkPipelineLayout pipelineLayout;
-		VkPipeline graphicsPipeline;
-
-    	VkCommandPool commandPool;
-		std::vector<VkCommandBuffer> commandBuffers;
-
-		VkCommandBuffer setupBuffer;
-
-		std::vector<VkSemaphore> imageAvailableSemaphores;
-		std::vector<VkSemaphore> renderFinishedSemaphores;
-		std::vector<VkFence> inFlightFences;
-		uint32_t currentFrame = 0;
+		std::unique_ptr<Window> window;
+		VkState& state;
 
 	public:
 		Engine(uint32_t width, uint32_t height, uint32_t max_frames_in_flight, uint32_t particle_count);
@@ -80,6 +37,7 @@ class Engine {
 		void createInstance();
 		void setupDebugMessenger(); 
 		void createSurface(); 
+		void initWindow();
 		void pickPhysicalDevice(); 
 		void createLogicalDevice(); 
 		void initCompute(const uint32_t particleCount, const int maxFramesInFlight);

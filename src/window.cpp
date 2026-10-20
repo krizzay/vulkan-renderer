@@ -4,67 +4,65 @@
 #include <GLFW/glfw3.h>
 
 #include "window.h"
+#include "vk-state.h"
 #include "structs.h"
 
-GLFWwindow* Window::window = nullptr;
-uint32_t Window::WIDTH = 800;
-uint32_t Window::HEIGHT = 600;
+const uint32_t WIDTH = 800;
+const uint32_t HEIGHT = 600;
 
-bool Window::cursorFree = false;
-bool Window::framebufferResized = false;
-
-glm::vec3* Window::movement = nullptr;
-glm::vec2* Window::oldPos = nullptr;
-glm::vec2* Window::moveAmount = nullptr; 
-bool* Window::resetPos = nullptr;
+Window::Window()
+	: state{VkState::getInstance()}
+{ }
 
 void Window::key_callback(GLFWwindow* windowPtr, int key, int scancode, int action, int mods) {
+	VkState& state = VkState::getInstance();
+
     switch (key)
     {
     case(GLFW_KEY_W):
         if (action == GLFW_PRESS)
-            movement->x++;
+            state.movement.x++;
         else if (action == GLFW_RELEASE)
-            movement->x--;
+            state.movement.x--;
         break;
 
     case(GLFW_KEY_S):
         if (action == GLFW_PRESS)
-            movement->x--;
+            state.movement.x--;
         else if (action == GLFW_RELEASE)
-            movement->x++;
+            state.movement.x++;
         break;
 
     case(GLFW_KEY_A):
         if (action == GLFW_PRESS)
-            movement->y--;
+            state.movement.y--;
         else if (action == GLFW_RELEASE)
-            movement->y++;
+            state.movement.y++;
         break;
 
     case(GLFW_KEY_D):
         if (action == GLFW_PRESS)
-            movement->y++;
+            state.movement.y++;
         else if (action == GLFW_RELEASE)
-            movement->y--;
+            state.movement.y--;
         break;
 
     case(GLFW_KEY_SPACE):
         if (action == GLFW_PRESS)
-            movement->z++;
+            state.movement.z++;
         else if (action == GLFW_RELEASE)
-            movement->z--;
+            state.movement.z--;
         break;
 
     case(GLFW_KEY_LEFT_SHIFT):
         if (action == GLFW_PRESS)
-            movement->z--;
+            state.movement.z--;
         else if (action == GLFW_RELEASE)
-            movement->z++;
+            state.movement.z++;
         break;
 
     case(GLFW_KEY_R):
-        *resetPos = true;
+        state.resetPos = true;
         break;
 
     case(GLFW_KEY_ESCAPE):
@@ -75,13 +73,13 @@ void Window::key_callback(GLFWwindow* windowPtr, int key, int scancode, int acti
     case(GLFW_KEY_Q):
         
         if(action == GLFW_PRESS){
-            if(cursorFree){
+            if(state.cursorFree){
                 glfwSetInputMode(windowPtr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
             }else{
                 glfwSetInputMode(windowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             }
-            cursorFree = !cursorFree;
+            state.cursorFree = !state.cursorFree;
         }
         break; 
     
@@ -91,18 +89,22 @@ void Window::key_callback(GLFWwindow* windowPtr, int key, int scancode, int acti
 }
 
 void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-    if(!cursorFree){  return; }
+	VkState& state = VkState::getInstance();
 
-    moveAmount->x += (oldPos->x - xpos) * 0.005f;
-    moveAmount->y += (oldPos->y - ypos) * 0.005f;
+    if(!state.cursorFree){ return; }
+
+    state.moveAmount.x += (state.oldPos.x - xpos) * 0.005f;
+    state.moveAmount.y += (state.oldPos.y - ypos) * 0.005f;
     
-    oldPos->x = xpos;
-    oldPos->y = ypos;
+    state.oldPos.x = xpos;
+    state.oldPos.y = ypos;
 
 }
 
 void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-		framebufferResized = true;
+	VkState& state = VkState::getInstance();
+
+	state.framebufferResized = true;
 }
 
 void Window::initWindow() {
@@ -110,14 +112,14 @@ void Window::initWindow() {
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan :3", nullptr, nullptr);
-	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+	state.window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan :3", nullptr, nullptr);
+	glfwSetFramebufferSizeCallback(state.window, framebufferResizeCallback);
 
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetCursorPosCallback(window, cursor_position_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetKeyCallback(state.window, key_callback);
+	glfwSetCursorPosCallback(state.window, cursor_position_callback);
+	glfwSetInputMode(state.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	if (glfwRawMouseMotionSupported()){
-		glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+		glfwSetInputMode(state.window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 	}
 
 }
